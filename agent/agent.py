@@ -48,7 +48,7 @@ async def entrypoint(ctx: agents.JobContext):
     session = AgentSession(
         llm=google.realtime.RealtimeModel(
             model="gemini-2.5-flash-native-audio-preview-12-2025",
-            voice="Aoede",
+            voice="Enceladus",
             proactivity=True,
             enable_affective_dialog=True,
             temperature=0.8
