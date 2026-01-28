@@ -2,44 +2,15 @@
 
 ## Change the agent's persona
 
-Modify the `PERSONA_INSTRUCTIONS` variable at the top of `agent/agent.py`:
-
-```python
-# Customize the agent's persona by modifying this variable
-PERSONA_INSTRUCTIONS = """Your custom persona instructions here."""
-```
-
 The `VisionAgent` class automatically includes video awareness safeguards, so you don't need to include instructions about checking for video availability. Focus your persona instructions on the role-specific behavior and personality.
 
-### Example personas
+### Available personas
 
-**Sports Commentator:**
-```python
-PERSONA_INSTRUCTIONS = """You are an enthusiastic sports commentator providing live play-by-play commentary.
+Choose from these pre-configured personas based on your use case.
 
-CRITICAL: You must provide CONTINUOUS commentary without waiting for user responses. Do not stop talking unless the user explicitly interrupts you by speaking.
+#### Standard personas
 
-Your commentary style:
-- Generate continuous commentary as video frames arrive
-- Process and comment on video frames as fast as they come in
-- Analyze action between frames and extrapolate what is happening
-- Keep up with the gameplay pace - you don't need to comment on every single frame, but try to parse between frames and maintain a steady flow of commentary
-- Be energetic, insightful, and entertaining
-- Call out player movements, key plays, and game dynamics
-- Only pause or stop when the user speaks to interrupt you
-
-Remember: Your job is to keep talking and providing commentary continuously. The video feed is your primary input - use it actively and continuously."""
-```
-
-**Important**: For continuous commentary, you'll also need to configure the RealtimeModel with `proactivity=True` and use constant video frame sampling (see sections below).
-
-**Basketball Coach:**
-```python
-PERSONA_INSTRUCTIONS = """You are a basketball coach analyzing game footage.
-Focus on player positioning, defensive rotations, and offensive sets.
-Provide tactical feedback as if coaching from the sideline.
-Be specific about what players should do differently."""
-```
+These personas work with the base configuration without additional changes.
 
 **Yoga Instructor:**
 ```python
@@ -65,9 +36,56 @@ Encourage proper technique and suggest adjustments.
 Keep the energy high and supportive."""
 ```
 
-### Advanced: Passing persona instructions programmatically
+#### Advanced personas
 
-If you need to pass different persona instructions at runtime (e.g., based on user preferences), you can still pass `persona_instructions` directly to `VisionAgent`:
+These personas require additional configuration changes beyond the base setup.
+
+**Sports Commentator (Strategic Analysis):**
+```python
+PERSONA_INSTRUCTIONS = """You are an enthusiastic sports commentator providing strategic game analysis and commentary.
+
+Your commentary approach:
+- Provide HIGH-LEVEL strategic analysis rather than play-by-play
+- Focus on: team names, current score, overall game situation, key players, and game momentum
+- Give periodic updates (every 10-15 seconds) with overview commentary
+- Identify and name the teams playing when you first see the game
+- Track and mention the score when visible
+- Discuss the overall flow and strategy of the game
+- Comment on significant moments or turning points, not every single play
+- Be energetic and insightful, but measured in your pace
+- Continue commentary naturally without waiting for user responses, unless interrupted
+
+Remember: You're analyzing the game at a strategic level, not calling every play. Give viewers context and understanding of what's happening overall."""
+```
+
+**Required configuration changes:**
+- Add `voice` module to imports
+- Enable proactive responses in `RealtimeModel` (`proactivity=True`, `enable_affective_dialog=True`, `temperature=0.8`)
+- Configure constant video sampling (`video_sampler=voice.VoiceActivityVideoSampler(speaking_fps=1.0, silent_fps=1.0)`)
+- Simplify greeting logic
+
+See the [Sports Commentator Configuration Guide](#sports-commentator-configuration-guide) below for step-by-step instructions.
+
+### How to implement a persona
+
+#### For standard personas
+
+Modify the `PERSONA_INSTRUCTIONS` variable at the top of `agent/agent.py`:
+
+```python
+# Customize the agent's persona by modifying this variable
+PERSONA_INSTRUCTIONS = """Your custom persona instructions here."""
+```
+
+Copy the persona instructions from the examples above and paste them into this variable. No other changes needed.
+
+#### For advanced personas
+
+Advanced personas like the Sports Commentator require configuration changes in the `entrypoint` function. Follow the detailed configuration guide for your chosen persona.
+
+#### Passing persona instructions programmatically
+
+If you need to pass different persona instructions at runtime (based on user preferences), pass `persona_instructions` directly to `VisionAgent`:
 
 ```python
 agent = VisionAgent(
@@ -75,9 +93,9 @@ agent = VisionAgent(
 )
 ```
 
-### Advanced: Overriding instructions completely
+#### Overriding instructions completely
 
-If you need full control over the instructions (not recommended for most use cases), you can override the `__init__` method:
+If you need full control over the instructions (not recommended for most use cases), override the `__init__` method:
 
 ```python
 class CustomAgent(Agent):
@@ -85,6 +103,103 @@ class CustomAgent(Agent):
         super().__init__(
             instructions="""Your complete instructions here."""
         )
+```
+
+### Sports Commentator Configuration Guide
+
+The Sports Commentator persona requires specific configuration changes from the base setup. Follow these steps to implement it.
+
+#### Step 1: Update imports
+
+Add the `voice` module to your imports:
+
+```python
+from livekit.agents import AgentServer, AgentSession, Agent, room_io, voice
+```
+
+#### Step 2: Set persona instructions
+
+Copy the Sports Commentator persona instructions from the [Advanced personas](#advanced-personas) section above and paste them into the `PERSONA_INSTRUCTIONS` variable at the top of `agent/agent.py`.
+
+#### Step 3: Configure RealtimeModel for proactive responses
+
+Add these three parameters to your `RealtimeModel` configuration:
+
+```python
+session = AgentSession(
+    llm=google.realtime.RealtimeModel(
+        model="gemini-2.5-flash-native-audio-preview-12-2025",
+        voice="Aoede",
+        proactivity=True,              # Allows responses without explicit user prompts
+        enable_affective_dialog=True,  # More natural, expressive delivery
+        temperature=0.8,               # Response variation (0.6-1.2 valid range)
+    ),
+)
+```
+
+**What these parameters do:**
+- `proactivity=True`: Allows the model to respond without waiting for explicit user prompts or questions. This affects user input behavior, not video-based commentary.
+- `enable_affective_dialog=True`: Makes the commentary more expressive and natural, improving the commentator's delivery.
+- `temperature=0.8`: Controls response variation. Higher values (0.8-1.0) create more varied and interesting commentary.
+
+#### Step 4: Configure constant video sampling
+
+Add a `video_sampler` parameter to your `AgentSession`:
+
+```python
+session = AgentSession(
+    llm=google.realtime.RealtimeModel(...),
+    video_sampler=voice.VoiceActivityVideoSampler(speaking_fps=1.0, silent_fps=1.0),
+)
+```
+
+Setting both `speaking_fps` and `silent_fps` to `1.0` provides the model with video frames at a constant rate (1 FPS) regardless of voice activity. This gives consistent visual context for strategic analysis and enables the periodic commentary updates.
+
+#### Step 5: Simplify greeting logic
+
+Use a simple greeting without conditional video track checking:
+
+```python
+await ctx.connect()
+
+await session.generate_reply(
+    instructions="Greet the user briefly and let them know you're ready to provide sports commentary once they share their screen."
+)
+```
+
+The agent automatically handles video input when available.
+
+#### Complete example
+
+Here's the complete `entrypoint` function with all changes:
+
+```python
+@server.rtc_session()
+async def entrypoint(ctx: agents.JobContext):
+    session = AgentSession(
+        llm=google.realtime.RealtimeModel(
+            model="gemini-2.5-flash-native-audio-preview-12-2025",
+            voice="Aoede",
+            proactivity=True,
+            enable_affective_dialog=True,
+            temperature=0.8
+        ),
+        video_sampler=voice.VoiceActivityVideoSampler(speaking_fps=1.0, silent_fps=1.0),
+    )
+
+    await session.start(
+        room=ctx.room,
+        agent=VisionAgent(persona_instructions=PERSONA_INSTRUCTIONS),
+        room_options=room_io.RoomOptions(
+            video_input=True,
+        ),
+    )
+    
+    await ctx.connect()
+    
+    await session.generate_reply(
+        instructions="Greet the user briefly and let them know you're ready to provide sports commentary once they share their screen."
+    )
 ```
 
 ## Add function calling
@@ -188,29 +303,27 @@ session = AgentSession(
 )
 ```
 
-**Note**: Use `google.beta.realtime.RealtimeModel` (not `google.realtime.RealtimeModel`) to access advanced features like `proactivity` and `enable_affective_dialog`.
+### Enable proactive responses
 
-### Enable continuous/proactive responses
-
-For personas that need to speak continuously without waiting for user input (like sports commentators), configure the model with proactive response parameters:
+For personas that need to respond without explicit user prompts (like the strategic sports commentator), configure the model with these parameters:
 
 ```python
 session = AgentSession(
-    llm=google.beta.realtime.RealtimeModel(
+    llm=google.realtime.RealtimeModel(
         model="gemini-2.5-flash-native-audio-preview-12-2025",
         voice="Aoede",
-        proactivity=True,  # KEY: Model generates responses without user prompting
+        proactivity=True,  # Allows responses without explicit user prompts
         enable_affective_dialog=True,  # More natural, expressive responses
         temperature=0.8,  # Response variation (0.6-1.2 valid range)
-        max_output_tokens=2048,  # Allow longer response segments
     ),
 )
 ```
 
 **Key parameters**:
-- `proactivity: bool` - Enables the model to generate responses without waiting for user input. Critical for continuous commentary.
-- `enable_affective_dialog: bool` - Makes responses more expressive and natural.
-- `temperature: float` - Controls response variation. Valid range is 0.6-1.2. Higher values (0.8-1.0) create more varied commentary.
-- `max_output_tokens: int` - Maximum length of each response. Increase for longer commentary segments.
+- `proactivity: bool` - Allows the model to respond without waiting for explicit user prompts or questions. This affects user input behavior, not video-based commentary.
+- `enable_affective_dialog: bool` - Makes responses more expressive and natural, improving the commentator's delivery style.
+- `temperature: float` - Controls response variation. Valid range is 0.6-1.2. Higher values (0.8-1.0) create more varied and interesting commentary.
+
+**Note**: For video-based continuous commentary (like the strategic sports commentator), the periodic update behavior comes from the persona instructions combined with constant video sampling (`speaking_fps=1.0, silent_fps=1.0`). The `proactivity` parameter affects how the model handles user input, not video feed analysis.
 
 Available models are listed in the [Gemini API documentation](https://ai.google.dev/gemini-api/docs/live).
