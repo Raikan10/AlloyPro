@@ -1,7 +1,8 @@
+import asyncio
 import logging
 from dotenv import load_dotenv
 from livekit import agents, rtc
-from livekit.agents import AgentServer, AgentSession, Agent, room_io
+from livekit.agents import AgentServer, AgentSession, Agent, room_io, voice
 from livekit.plugins import google
 
 load_dotenv(".env.local")
@@ -9,7 +10,22 @@ load_dotenv(".env.local")
 logger = logging.getLogger(__name__)
 
 # Customize the agent's persona by modifying this variable
-PERSONA_INSTRUCTIONS = """You are a helpful assistant that can see through the user's camera. Be concise and conversational."""
+# PERSONA_INSTRUCTIONS = """You are a helpful assistant that can see through the user's camera. Be concise and conversational."""
+
+PERSONA_INSTRUCTIONS = """You are an enthusiastic sports commentator providing strategic game analysis and commentary.
+
+Your commentary approach:
+- Provide HIGH-LEVEL strategic analysis rather than play-by-play
+- Focus on: team names, current score, overall game situation, key players, and game momentum
+- Give periodic updates (every 10-15 seconds) with overview commentary
+- Identify and name the teams playing when you first see the game
+- Track and mention the score when visible
+- Discuss the overall flow and strategy of the game
+- Comment on significant moments or turning points, not every single play
+- Be energetic and insightful, but measured in your pace
+- Continue commentary naturally without waiting for user responses, unless interrupted
+
+Remember: You're analyzing the game at a strategic level, not calling every play. Give viewers context and understanding of what's happening overall."""
 
 class VisionAgent(Agent):
     BASE_VIDEO_AWARENESS = """IMPORTANT: You can only see video when the user enables their camera or screenshare.
@@ -28,51 +44,16 @@ server = AgentServer()
 
 @server.rtc_session()
 async def entrypoint(ctx: agents.JobContext):
-    has_video = False
-    
-    def on_track_subscribed(
-        track: rtc.Track,
-        publication: rtc.TrackPublication,
-        participant: rtc.RemoteParticipant,
-    ):
-        nonlocal has_video
-        if track.kind == rtc.TrackKind.KIND_VIDEO:
-            has_video = True
-            logger.info(f"Video track subscribed from {participant.identity}")
-    
-    def on_track_unsubscribed(
-        track: rtc.Track,
-        publication: rtc.TrackPublication,
-        participant: rtc.RemoteParticipant,
-    ):
-        nonlocal has_video
-        if track.kind == rtc.TrackKind.KIND_VIDEO:
-            # Check if there are any other video tracks
-            has_video = any(
-                pub.track and pub.track.kind == rtc.TrackKind.KIND_VIDEO
-                for p in ctx.room.remote_participants.values()
-                for pub in p.track_publications.values()
-                if pub.subscribed
-            )
-            logger.info(f"Video track unsubscribed from {participant.identity}, has_video={has_video}")
-    
-    # Subscribe to track events
-    ctx.room.on("track_subscribed", on_track_subscribed)
-    ctx.room.on("track_unsubscribed", on_track_unsubscribed)
-    
-    # Check for existing video tracks
-    for participant in ctx.room.remote_participants.values():
-        for publication in participant.track_publications.values():
-            if publication.subscribed and publication.track and publication.track.kind == rtc.TrackKind.KIND_VIDEO:
-                has_video = True
-                break
-
     # Gemini Live API includes built-in VAD-based turn detection (enabled by default)
     session = AgentSession(
         llm=google.realtime.RealtimeModel(
             model="gemini-2.5-flash-native-audio-preview-12-2025",
             voice="Aoede",
+            proactivity=True,
+            enable_affective_dialog=True,
+            temperature=0.8
         ),
+        video_sampler=voice.VoiceActivityVideoSampler(speaking_fps=1.0, silent_fps=1.0),
     )
 
     await session.start(
@@ -82,16 +63,11 @@ async def entrypoint(ctx: agents.JobContext):
             video_input=True,
         ),
     )
-
-    # Generate initial greeting
-    if has_video:
-        await session.generate_reply(
-            instructions="Greet the user and let them know you can see their video feed."
-        )
-    else:
-        await session.generate_reply(
-            instructions="Greet the user and let them know you're ready to help. Mention that they can enable their camera or screenshare if they want you to see something."
-        )
+    
+    await ctx.connect()
+    
+    # Simple greeting - user speaking will trigger video flow
+    await session.generate_reply(instructions="Greet the user briefly and let them know you're ready to provide sports commentary once they share their screen.")
 
 if __name__ == "__main__":
     agents.cli.run_app(server)
