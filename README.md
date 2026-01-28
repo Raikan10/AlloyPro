@@ -14,7 +14,7 @@ The MCP server includes tools that let your AI assistant browse and search the d
 
 Click this button to install:
 
-![Install MCP Server in Cursor](https://cursor.com/deeplink/mcp-install-dark.svg)
+[![Install MCP Server in Cursor](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en-US/install-mcp?name=livekit-docs&config=eyJ1cmwiOiJodHRwczovL2RvY3MubGl2ZWtpdC5pby9tY3AifQ%3D%3D)
 
 Or add it manually to your MCP settings:
 
