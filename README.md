@@ -114,6 +114,16 @@ https://docs.livekit.io/mcp
 
 Open `http://localhost:3000` in your browser. You'll see a control bar with microphone and camera buttons. Click "Start" to begin a session. The agent will greet you and ask what you'd like it to watch and comment on. Enable your camera to let the agent see what you're showing it.
 
+## Try the sports commentator example
+
+Want to see a pre-configured agent in action? This repo includes a `sports-commentator` branch with a sports commentary agent ready to go. Switch to that branch to try an agent that provides live commentary on sports or activities you show it through your camera.
+
+```bash
+git checkout sports-commentator
+```
+
+Then follow the same setup and run steps above.
+
 ## Customization
 
 See [docs/CUSTOMIZATION.md](docs/CUSTOMIZATION.md) for how to:
