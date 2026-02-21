@@ -2,11 +2,17 @@
 
 AlloyPro is a next-generation industrial-grade AI assistant designed for field engineers and manufacturing environments. It combines high-performance voice and vision AI with an Augmented Reality (AR) HUD to provide real-time guidance, technical documentation access, and automated reporting.
 
-Built with **Gemini Live API** and **LiveKit**, AlloyPro offers a seamless "eyes-on, hands-free" experience for complex technical workflows.
+---
+
+## 🚀 Key Technologies
+
+- **UI & Frontend**: Built with [Lovable](https://lovable.dev), providing a high-fidelity industrial "Cockpit" interface.
+- **Real-time AI**: Powered by **Google Gemini Live API** via **LiveKit**, enabling multimodal "eyes-on, hands-free" interaction.
+- **Automation & Logistics**: Purchase ordering and supply chain workflows are orchestrated through [Dust](https://dust.tt), ensuring seamless integration with industrial ERPs.
 
 ---
 
-## 🚀 Key Features
+## ✨ Key Features
 
 - **Multimodal AR HUD**: A technical "Heads-Up Display" (HUD) overlay that identifies parts, provides step-by-step procedures, and visualizes system status.
 - **Voice-First Interaction**: Real-time conversation with an AI agent that understands technical context and engineering terminology.
@@ -15,7 +21,7 @@ Built with **Gemini Live API** and **LiveKit**, AlloyPro offers a seamless "eyes
   - **Idle**: System standby and monitoring.
   - **Part ID**: Real-time identification of components.
   - **Procedure**: Guided execution of maintenance tasks.
-  - **Reporting**: Automated generation of technical service reports.
+  - **Reporting & Ordering**: Automated generation of technical service reports and **Dust-powered** purchase ordering.
 - **Hands-Free Operation**: Optimized for mobile and field use with voice-controlled camera toggles and cockpit controls.
 
 ---
