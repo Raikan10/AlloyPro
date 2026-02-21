@@ -45,3 +45,9 @@ Thumbs.db
 .env
 .env.local
 .env.*.local
+.env.cloud.md
+
+# Gemini
+.gemini.cloud.md
+.gemini/
+.geminiignore

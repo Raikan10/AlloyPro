@@ -12,6 +12,17 @@ dist
 dist-ssr
 *.local
 
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+.env.cloud.md
+
+# Gemini
+.gemini.cloud.md
+.gemini/
+.geminiignore
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

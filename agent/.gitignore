@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+*.egg-info/
+dist/
+build/
+.uv/
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+.env.cloud.md
+
+# Gemini
+.gemini.cloud.md
+.gemini/
+.geminiignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
