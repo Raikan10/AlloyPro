@@ -1,24 +1,28 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import {
   AlertTriangle,
   ArrowLeft,
   Brain,
+  Camera,
   CheckCircle2,
   ClipboardList,
   Clock,
   FileText,
   History,
+  Lock,
   Mail,
   MapPin,
+  Mic,
   Package,
   Phone,
   Wrench,
   XCircle,
 } from 'lucide-react';
+import { useSessionContext } from '@livekit/components-react';
 import { BeamButton, TechLabel } from '@/components/alloypro/IndustrialAtoms';
 import {
   Accordion,
@@ -61,6 +65,9 @@ export default function OrderDetail() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const { serviceOrders, selectOrder, beginInspection } = useCopilotStore();
+  const session = useSessionContext();
+  const [permissionError, setPermissionError] = useState<string | null>(null);
+  const [isRequesting, setIsRequesting] = useState(false);
 
   const order = serviceOrders.find((o) => o.id === id);
 
@@ -69,10 +76,42 @@ export default function OrderDetail() {
     return null;
   }
 
-  const handleBeginInspection = () => {
-    selectOrder(order);
-    beginInspection();
-    router.push('/');
+  const handleBeginInspection = async () => {
+    setIsRequesting(true);
+    setPermissionError(null);
+
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('MediaDevicesApiNotAvailable');
+      }
+
+      // Proactively request permissions to ensure mobile prompt triggers on direct user action
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+      // If we got here, permissions are granted. Stop the probe stream.
+      stream.getTracks().forEach((track) => track.stop());
+
+      selectOrder(order);
+      beginInspection();
+      session.start();
+      router.push('/');
+    } catch (err: any) {
+      console.error('Permission request failed:', err);
+      if (err.message === 'MediaDevicesApiNotAvailable') {
+        setPermissionError(
+          'Camera and Microphone access requires a secure connection. Please access this app via HTTPS or localhost.'
+        );
+      } else if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        setPermissionError(
+          'Camera and Microphone access are required for AR diagnostics. Please enable them in your browser settings and try again.'
+        );
+      } else {
+        setPermissionError(
+          'Could not access media devices. Ensure they are not in use by another app.'
+        );
+      }
+    } finally {
+      setIsRequesting(false);
+    }
   };
 
   const reportedDate = order.reportedAt
@@ -104,6 +143,19 @@ export default function OrderDetail() {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto px-4 pb-6">
+        {/* Permission Error Alert */}
+        {permissionError && (
+          <div className="animate-in fade-in slide-in-from-top-2 border-destructive/50 bg-destructive/10 text-destructive mt-4 flex items-start gap-3 rounded-sm border p-4">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+            <div className="flex-1">
+              <p className="font-mono text-[10px] font-bold tracking-wider uppercase">
+                Hardware Access Denied
+              </p>
+              <p className="mt-1 text-xs leading-tight opacity-90">{permissionError}</p>
+            </div>
+          </div>
+        )}
+
         {/* System + OEM quick info */}
         <div className="flex items-center gap-2 py-3">
           <span className="text-muted-foreground text-[10px] tracking-wider uppercase">
@@ -370,7 +422,16 @@ export default function OrderDetail() {
 
         {/* Actions */}
         <div className="mt-6 flex flex-col gap-3">
-          <BeamButton onClick={handleBeginInspection}>Begin Inspection</BeamButton>
+          <BeamButton onClick={handleBeginInspection} disabled={isRequesting}>
+            {isRequesting ? (
+              <span className="flex items-center gap-2">
+                <div className="border-background h-3 w-3 animate-spin rounded-full border-2 border-t-transparent" />
+                Initializing...
+              </span>
+            ) : (
+              'Begin Inspection'
+            )}
+          </BeamButton>
           <button
             onClick={() => router.push('/orders')}
             className="text-muted-foreground hover:text-foreground py-2 text-center text-xs transition-colors"

@@ -1,3 +1,4 @@
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 
 function WelcomeImage() {
@@ -28,6 +29,8 @@ export const WelcomeView = ({
   onStartCall,
   ref,
 }: React.ComponentProps<'div'> & WelcomeViewProps) => {
+  const router = useRouter();
+
   return (
     <div
       ref={ref}
@@ -50,7 +53,7 @@ export const WelcomeView = ({
         <div className="mt-10 mb-6 w-full max-w-xs space-y-4">
           <Button
             size="lg"
-            onClick={onStartCall}
+            onClick={() => router.push('/orders')}
             className="bg-accent hover:bg-accent/90 text-background border-accent/20 h-14 w-full rounded-sm border font-mono text-sm font-bold tracking-[0.2em] uppercase shadow-[0_0_20px_rgba(var(--accent-rgb),0.3)]"
           >
             {startButtonText}

@@ -16,7 +16,6 @@ const ProcedureView: React.FC = () => {
         <TechLabel>
           Procedure — Step {activeStep + 1}/{procedureSteps.length}
         </TechLabel>
-        {isMicActive && <VoicePulse />}
       </div>
 
       <AnimatePresence mode="wait">

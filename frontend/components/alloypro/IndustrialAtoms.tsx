@@ -1,8 +1,13 @@
 import React from 'react';
 
 // ── TechLabel ──────────────────────────────────────────────
-export const TechLabel: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <span className="text-accent font-sans text-[10px] font-semibold tracking-[0.15em] uppercase">
+export const TechLabel: React.FC<{ children: React.ReactNode; className?: string }> = ({
+  children,
+  className = '',
+}) => (
+  <span
+    className={`text-accent font-sans text-[10px] font-semibold tracking-[0.15em] uppercase ${className}`}
+  >
     {children}
   </span>
 );

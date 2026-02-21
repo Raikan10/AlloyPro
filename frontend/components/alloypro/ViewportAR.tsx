@@ -18,18 +18,35 @@ const ViewportAR: React.FC = () => {
 
   React.useEffect(() => {
     if (!cameraToggle.enabled && !cameraToggle.pending) {
-      cameraToggle.toggle(true).catch(console.error);
+      if (localParticipant) {
+        localParticipant.setCameraEnabled(true, { facingMode }).catch(console.error);
+      } else {
+        cameraToggle.toggle(true).catch(console.error); // fallback
+      }
     }
-  }, [cameraToggle.enabled, cameraToggle.pending, cameraToggle.toggle]);
+  }, [
+    cameraToggle.enabled,
+    cameraToggle.pending,
+    cameraToggle.toggle,
+    localParticipant,
+    facingMode,
+  ]);
 
   const toggleCamera = useCallback(async () => {
     const newFacingMode = facingMode === 'environment' ? 'user' : 'environment';
     setFacingMode(newFacingMode);
 
-    // In LiveKit, we usually handle this by switching the device.
-    // For now, we'll assume the camera track handles its own facing mode if configured,
-    // or we'd use localParticipant.setCameraEnabled(...) with constraints.
-  }, [facingMode]);
+    if (localParticipant) {
+      try {
+        // Force hardware to release the camera before requesting a new capture stream
+        await localParticipant.setCameraEnabled(false);
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        await localParticipant.setCameraEnabled(true, { facingMode: newFacingMode });
+      } catch (err) {
+        console.error('Failed to switch camera:', err);
+      }
+    }
+  }, [facingMode, localParticipant]);
 
   const isCameraEnabled = cameraTrack && !cameraTrack.publication.isMuted;
 
