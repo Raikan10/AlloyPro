@@ -1,143 +1,103 @@
-# Gemini LiveKit Quickstart
+# AlloyPro: Industrial AI Copilot 🛠️⚡
 
-A starter kit for building voice and vision agents with Gemini Live API and LiveKit. Get from zero to a working multimodal agent in under 10 minutes.
+AlloyPro is a next-generation industrial-grade AI assistant designed for field engineers and manufacturing environments. It combines high-performance voice and vision AI with an Augmented Reality (AR) HUD to provide real-time guidance, technical documentation access, and automated reporting.
 
-## Install the LiveKit MCP server
+Built with **Gemini Live API** and **LiveKit**, AlloyPro offers a seamless "eyes-on, hands-free" experience for complex technical workflows.
 
-**This is important.** Before you start building, install the LiveKit MCP (Model Context Protocol) server in your IDE. This gives your AI coding assistant direct access to LiveKit documentation so it can help you customize and develop your app with accurate, current information.
+---
 
-The MCP server includes tools that let your AI assistant browse and search the docs site as you code.
+## 🚀 Key Features
 
-### Installation by IDE
+- **Multimodal AR HUD**: A technical "Heads-Up Display" (HUD) overlay that identifies parts, provides step-by-step procedures, and visualizes system status.
+- **Voice-First Interaction**: Real-time conversation with an AI agent that understands technical context and engineering terminology.
+- **Computer Vision**: Live video analysis to identify machinery parts (Part ID), detect anomalies, and verify completed steps.
+- **Industrial Workflows**: Pre-configured states for:
+  - **Idle**: System standby and monitoring.
+  - **Part ID**: Real-time identification of components.
+  - **Procedure**: Guided execution of maintenance tasks.
+  - **Reporting**: Automated generation of technical service reports.
+- **Hands-Free Operation**: Optimized for mobile and field use with voice-controlled camera toggles and cockpit controls.
 
-**Cursor**
+---
 
-Click this button to install:
+## 🏗️ Architecture
 
-[![Install MCP Server in Cursor](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en-US/install-mcp?name=livekit-docs&config=eyJ1cmwiOiJodHRwczovL2RvY3MubGl2ZWtpdC5pby9tY3AifQ%3D%3D)
+AlloyPro is composed of three main components:
 
-Or add it manually to your MCP settings:
+1.  **Agent (`/agent`)**: A Python-based LiveKit Agent powered by the Gemini Live API for real-time multimodal reasoning.
+2.  **Frontend (`/frontend`)**: A Next.js 15 application featuring the AlloyPro HUD, AR Viewport, and Cockpit controls.
+3.  **AlloyPro V1 (`/alloyprov1`)**: A specialized Vite/React prototype focusing on the core HUD experience.
 
-```json
-{
-  "livekit-docs": {
-    "url": "https://docs.livekit.io/mcp"
-  }
-}
-```
+---
 
-**Claude Code**
+## 🛠️ Tech Stack
 
-```bash
-claude mcp add --transport http livekit-docs https://docs.livekit.io/mcp
-```
+- **AI**: Google Gemini Live API (Multimodal)
+- **Real-time**: LiveKit Agents & SDKs
+- **Frontend**: Next.js 15, React, Tailwind CSS, Radix UI, Framer Motion
+- **Agent**: Python, `livekit-agents`
+- **Design**: Industrial-themed "Cockpit" UI with AR-inspired components
 
-**Codex**
+---
 
-```bash
-codex mcp add --url https://docs.livekit.io/mcp livekit-docs
-```
+## 🏁 Getting Started
 
-**Gemini CLI**
+### Prerequisites
 
-```bash
-gemini mcp add --transport http livekit-docs https://docs.livekit.io/mcp
-```
+- **Python 3.10+** (for the Agent)
+- **Node.js 18+** & **pnpm** (for the Frontend)
+- **LiveKit Cloud Account**: [Sign up for free](https://cloud.livekit.io/)
+- **Google AI Studio API Key**: [Get a Gemini API Key](https://aistudio.google.com/)
 
-**Other IDEs**
-
-Add this URL to your MCP client. Set the transport to `http` or "Streamable HTTP" if prompted:
-
-```
-https://docs.livekit.io/mcp
-```
-
-## Prerequisites
-
-- Python 3.10+ (but < 3.14)
-- Node.js 18+
-- LiveKit CLI installed:
-  - macOS: `brew install livekit-cli`
-  - Linux: `curl -sSL https://get.livekit.io/cli | bash`
-  - Windows: `winget install LiveKit.LiveKitCLI`
-- LiveKit Cloud account
-- Google API key for Gemini
-
-## Quick Start
-
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/livekit-examples/gemini-live-quickstart.git
-   cd gemini-livekit-quickstart
-   ```
-
-2. Set up the agent:
-   ```bash
-   cd agent
-   uv sync
-   cp .env.example .env.local
-   # Edit .env.local with your API keys
-   ```
-
-3. Set up the frontend:
-   ```bash
-   cd ../frontend
-   pnpm install
-   cp .env.example .env.local
-   # Edit .env.local with your LiveKit credentials
-   ```
-
-4. Configure environment variables (optional - you can also edit .env.local files directly):
-   ```bash
-   # In the agent directory
-   cd ../agent
-   lk app env -w
-   
-   # In the frontend directory
-   cd ../frontend
-   lk app env -w
-   ```
-
-5. Run the agent:
-   ```bash
-   cd agent
-   uv run agent.py dev
-   ```
-
-6. Run the frontend (in a new terminal):
-   ```bash
-   cd frontend
-   pnpm dev
-   ```
-
-## What you should see
-
-Open `http://localhost:3000` in your browser. You'll see a control bar with microphone and camera buttons. Click "Start" to begin a session. The agent will greet you and ask what you'd like it to watch and comment on. Enable your camera to let the agent see what you're showing it.
-
-## Try the sports commentator example
-
-Want to see a pre-configured agent in action? This repo includes a `sports-commentator` branch with a sports commentary agent ready to go. Switch to that branch to try an agent that provides live commentary on sports or activities you show it through your camera.
+### 1. Set up the Agent
 
 ```bash
-git checkout sports-commentator
+cd agent
+uv sync
+cp .env.example .env.local
+# Add your LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET, and GOOGLE_API_KEY
 ```
 
-Then follow the same setup and run steps above.
+Run the agent:
+```bash
+uv run agent.py dev
+```
 
-## Customization
+### 2. Set up the Frontend
 
-See [docs/CUSTOMIZATION.md](docs/CUSTOMIZATION.md) for how to:
-- Change the agent's persona
-- Add function calling
-- Adjust video settings
-- Swap voice or model
+```bash
+cd frontend
+pnpm install
+cp .env.example .env.local
+# Add your LiveKit credentials
+```
 
-## Troubleshooting
+Run the frontend:
+```bash
+pnpm dev
+```
 
-See [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) for common issues and solutions.
+### 3. Usage
 
-## Learn more
+1. Open `http://localhost:3000` in your browser.
+2. Grant camera and microphone permissions.
+3. Click "Start Session" to connect to the AlloyPro AI Copilot.
+4. Use the "Cockpit" controls or voice commands to navigate between Part ID, Procedure, and Reporting modes.
 
-- [LiveKit Agents Documentation](https://docs.livekit.io/agents/)
-- [Gemini Live API Documentation](https://ai.google.dev/gemini-api/docs/live)
-- [LiveKit Frontend SDKs](https://docs.livekit.io/client-sdk-js/)
+---
+
+## 🔧 Customization
+
+- **Agent Persona**: Modify `agent/agent.py` to adjust the AI's technical expertise and personality.
+- **HUD Components**: Customize the AR interface in `frontend/components/alloypro/`.
+- **System Theme**: Adjust colors and industrial atoms in `frontend/components/alloypro/IndustrialAtoms.tsx`.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+Built with ❤️ by the AlloyPro team using [LiveKit](https://livekit.io) and [Gemini](https://deepmind.google/technologies/gemini/).
