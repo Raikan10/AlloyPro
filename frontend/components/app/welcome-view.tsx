@@ -29,36 +29,50 @@ export const WelcomeView = ({
   ref,
 }: React.ComponentProps<'div'> & WelcomeViewProps) => {
   return (
-    <div ref={ref}>
-      <section className="bg-background flex flex-col items-center justify-center text-center">
-        <WelcomeImage />
+    <div
+      ref={ref}
+      className="bg-softblack relative flex h-full w-full flex-col items-center justify-center overflow-hidden font-sans"
+    >
+      {/* Grid Overlay */}
+      <div className="bg-grid-overlay pointer-events-none absolute inset-0 opacity-40" />
 
-        <p className="text-foreground max-w-prose pt-1 leading-6 font-medium">
-          Chat live with your voice AI agent
+      {/* Content */}
+      <section className="relative z-10 flex flex-col items-center justify-center px-6 text-center">
+        <div className="mb-8 rounded-sm border border-white/10 bg-white/[0.03] p-4 backdrop-blur-sm">
+          <WelcomeImage />
+        </div>
+
+        <h1 className="text-offwhite mb-2 font-serif text-4xl italic">AlloyPro</h1>
+        <p className="text-muted-foreground max-w-prose pt-1 font-mono text-sm tracking-widest uppercase">
+          Industrial Copilot & AR Diagnostics
         </p>
 
-        <Button
-          size="lg"
-          onClick={onStartCall}
-          className="mt-6 w-64 rounded-full font-mono text-xs font-bold tracking-wider uppercase"
-        >
-          {startButtonText}
-        </Button>
+        <div className="mt-10 mb-6 w-full max-w-xs space-y-4">
+          <Button
+            size="lg"
+            onClick={onStartCall}
+            className="bg-accent hover:bg-accent/90 text-background border-accent/20 h-14 w-full rounded-sm border font-mono text-sm font-bold tracking-[0.2em] uppercase shadow-[0_0_20px_rgba(var(--accent-rgb),0.3)]"
+          >
+            {startButtonText}
+          </Button>
+
+          <p className="text-muted-foreground text-[10px] leading-relaxed tracking-widest uppercase">
+            Encrypted connection active <br /> System ready for diagnostic session
+          </p>
+        </div>
       </section>
 
-      <div className="fixed bottom-5 left-0 flex w-full items-center justify-center">
-        <p className="text-muted-foreground max-w-prose pt-1 text-xs leading-5 font-normal text-pretty md:text-sm">
-          Need help getting set up? Check out the{' '}
-          <a
-            target="_blank"
-            rel="noopener noreferrer"
-            href="https://docs.livekit.io/agents/start/voice-ai/"
-            className="underline"
-          >
-            Voice AI quickstart
-          </a>
-          .
-        </p>
+      {/* Footer */}
+      <div className="fixed bottom-8 left-0 z-10 flex w-full items-center justify-center px-6">
+        <div className="flex flex-col items-center gap-2">
+          <div className="text-muted-foreground flex items-center gap-2 text-[10px] tracking-widest uppercase">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
+            Infrastructure Online
+          </div>
+          <p className="text-muted-foreground/50 max-w-prose text-[10px] font-normal tracking-widest uppercase">
+            Secure Industrial Portal v1.4.2
+          </p>
+        </div>
       </div>
     </div>
   );

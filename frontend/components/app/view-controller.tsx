@@ -3,11 +3,11 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { useSessionContext } from '@livekit/components-react';
 import type { AppConfig } from '@/app-config';
-import { SessionView } from '@/components/app/session-view';
+import { AlloyProSessionView } from '@/components/alloypro/AlloyProSessionView';
 import { WelcomeView } from '@/components/app/welcome-view';
 
 const MotionWelcomeView = motion.create(WelcomeView);
-const MotionSessionView = motion.create(SessionView);
+const MotionAlloyProSessionView = motion.create(AlloyProSessionView);
 
 const VIEW_MOTION_PROPS = {
   variants: {
@@ -46,9 +46,7 @@ export function ViewController({ appConfig }: ViewControllerProps) {
         />
       )}
       {/* Session view */}
-      {isConnected && (
-        <MotionSessionView key="session-view" {...VIEW_MOTION_PROPS} appConfig={appConfig} />
-      )}
+      {isConnected && <MotionAlloyProSessionView key="session-view" {...VIEW_MOTION_PROPS} />}
     </AnimatePresence>
   );
 }
